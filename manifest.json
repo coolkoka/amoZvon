@@ -1,0 +1,51 @@
+{
+    "widget":{
+            "name": "widget.name",
+            "description": "widget.description",
+            "short_description": "widget.short_description",
+            "code": "zvon2",
+            "secret_key": "993a7524ea51cbd54cc7c1d7293803f0dee725105a7a3d4e495298c0ab768a04",
+            "version": "1.0.0",
+            "interface_version": 2,
+            "init_once": false,
+            "locale":[
+                    "ru"
+                    ],
+            "installation": true
+            },
+    "locations":[
+            "ccard-1",
+            "comcard-1",
+            "clist-0",
+            "lcard-1",
+            "settings"
+            ],
+    "settings":{
+				"sender":{
+                        "name": "settings.sender",
+                        "type": "text",
+                        "required": true
+                        },
+                "email":{
+                        "name": "settings.email",
+                        "type": "text",
+                        "required": true
+                        },
+				"password":{
+                        "name": "settings.password",
+                        "type": "text",
+                        "required": true
+                        },
+                "state":{
+                        "name": "settings.state",
+                        "type": "text",
+                        "required": false
+                        },
+				"vendosoft_confirmation":
+						{
+							"name": "settings.vendosoft_confirmation",
+							"type": "custom",
+							"required": true
+						} 
+            }
+}
