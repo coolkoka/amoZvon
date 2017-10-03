@@ -2,6 +2,7 @@
 		var CustomWidget = function () {
 			var self = this;
 			var url = 'https://lk.zvonobot.ru';
+			var leadStatus = '';
 			this.getCurrentPhoneList = function () {
 				var area = self.system().area,
 					list = [],
@@ -105,6 +106,46 @@
 					}
 				});
 			};
+
+			this.modalConfigLeads = function() {		
+				$.ajax({
+				    url: '/private/api/v2/json/accounts/current',             // указываем URL и
+				    dataType : "json",                     // тип загружаемых данных
+				    success: function (data) { // вешаем свой обработчик на функцию success
+				        var leads_statuses = data.response.account.leads_statuses;
+				        console.log(leads_statuses);
+				        var template = '<style> .f1-modal-header{ font-size: 16pt; font-weight: bold; padding-bottom: 10px;}'
+						+ '#f1golos-leads-select {width: 84%; margin: 0 auto; height: 35px; background-color: #f3f1f1; color: #666666;}'
+						+'.f1golos-leads-confrim {height: 35px; background-color: #6dc985; color: #fff; width: 40px;}'
+						+'.f1-modal-p {padding-bottom: 10px;}'
+						+'#f1golos-leads-select, .f1golos-leads-confrim {border-radius: 5px; }'
+						+'</style>';
+						template +='<h1 class="f1-modal-header">Настройка сценария звонка</h1>'
+						+ "<p class='f1-modal-p'>Вы можете выбрать, по достижению какого статуса сделки отправлять звонок или же отправлять звонок при любой смене статуса сделки</p>"
+						+'<select id="f1golos-leads-select">'
+						leads_statuses.forEach(function(leads) {
+							template += '<option>' + leads.name + '</option>'
+						});
+						template += '</select> <button class="f1golos-leads-confrim">OK</button>';
+						
+				        modal = new Modal({	
+						  class_name: 'modal-window',
+						   init: function ($modal_body) {
+							   var $this = $(this);
+							   $modal_body
+								  .trigger('modal:loaded')
+								  .html(template)
+								  .trigger('modal:centrify')
+								  .append('<span class="modal-body__close"><span class="icon icon-modal-close"></span></span>');
+								leadStatus = document.all('f1golos-leads-select').value;
+						    },
+							destroy: function () {
+							}
+						});
+				    } 
+				});
+				
+			};
 			
 			this.createNotification = function(id_card, number) {
 				var area = self.system().area;
@@ -157,15 +198,16 @@
 					}
 				}
 			};
-			
+
 			this.sendInfo = function () {
 				var apiKey = document.all('api-label').innerHTML;
 				var outgoingPhone = document.all('f1golos-phones-select').value;
 				var textCall = document.all('record').value;
 				var phonesStr = document.all('phones').value;
 				var audioId = document.all('f1golos-audio-select').value;
+				var phones = phonesStr.replace(' ','\n').split('\n');
 				
-				var phones = phonesStr.replace(' ','\n').split('\n');				
+				console.log(leadStatus);	
 				if ($('.f1golos-record-radio-one').attr('checked') == 'checked') {
 					if (textCall != '') {
 						setTimeout(function () {	
@@ -305,15 +347,9 @@
 			this.createWidget = function (phones) {	
 				var area = self.system().area;	
 				var template = '<style> .f1golos-phones{position:relative;display: inline-block !important;width:80% !important}  .f1golos-plus{position:relative;display: inline-block !important;width:20% !important}.f1golos-mainstyle { padding: 10px; font-family: "Roboto","Helvetica Neue", Helvetica, Arial, sans-serif; color: #666666 ; font-size: 16px; line-height: 1.846; } .f1golos-mainstyle .form-control { display: block; width: 100%; background-color: rgba(33, 150, 243, 0.1) !important; font: inherit; color: #666666 ; border: none; outline: 0; } .f1golos-mainstyle select.form-control { height: 35px; } .f1golos-mainstyle textarea { resize: vertical; } .f1golos-mainstyle textarea:focus { -webkit-box-shadow: inset 0 -2px 0 #6dc985 ; box-shadow: inset 0 -2px 0 #6dc985 ; } .f1golos-mainstyle .form-control.has-error { -webkit-box-shadow: inset 0 -2px 0 #e51c23 ; box-shadow: inset 0 -2px 0 #e51c23 ; } .f1golos-mainstyle .text-danger { font-size: 12px; color: #e51c23 } .f1golos-mainstyle button { margin: 5px 0; border: none; -webkit-box-shadow: 1px 1px 4px rgba(0,0,0,0.4); box-shadow: 1px 1px 4px rgba(0,0,0,0.4); -webkit-transition: all 0.4s; -o-transition: all 0.4s; transition: all 0.4s; color: #ffffff ; cursor: pointer; padding: 6px 16px; font: inherit; font-size: 14px; border-radius: 3px; background-color: #6dc985 ; } .f1golos-mainstyle button:hover, .f1golos-mainstyle button:focus{ background-color: #6dc985 ; }.f1golos-mainstyle button:disabled{ background-color: #444444 ; }</style>';
-				// if (area == 'lcard') {
-				// 	template += "<span>ЭТО ВКЛАДКА ЛИДОВ!!!</span>"
-				// }
 				template += '<div class="f1golos-mainstyle">'
 				if (area == 'lcard') {
-					template += '<span>Звонок при изменении статуса сделки: </span><input type="checkbox">' 
-					+ '<select>'
-					+'<option>Cтатус сделки 1</option> <option>Cтатус сделки 2</option> <option>Cтатус сделки 3</option> <option>Cтатус сделки 3</option>'
-					+'</select>'
+					template += '<button class="btn f1golos-config-leads">Настройка сценария звонка</button>'
 				}
 				template += '<div> <span>На какие номера будем звонить?</span> <textarea class="form-control" rows="3" name="phones" id="phones" readonly>' + phones + '</textarea> </div> <div> <span>С какого номера будем звонить?</span> <select id="f1golos-phones-select" class="form-control f1golos-phones"> </select><button class="btn f1golos-plus">+</button> </div> <div class="radio"> <input id="f1golos-record-radio-one" class="f1golos-record-radio-one" type="radio" name="record-radio" value="f1golos-record-radio-one" checked="checked"> <label for="f1golos-record-radio-one">Текст</label> <input id="f1golos-record-radio-two" class="f1golos-record-radio-two" type="radio" name="record-radio" value="f1golos-record-radio-two"> <label for="f1golos-record-radio-two">Аудиоролики</label> </div> <div class="textAudio"> <span>Создайте аудиоролик для рассылки</span> <textarea class="form-control" name="record" id="record" placeholder="Введите текст аудиоролика" required></textarea></div> <div class="audio"> <span>Выберите аудиоролик</span> <select id="f1golos-audio-select" class="form-control"> </select> </div> <div style="text-align: center; padding-top: 15px"> <span class="status-label" id="status-label" name="status-label" style="color:#6dc985 "></span> <button class="btn f1golos-start">Начать рассылку</button> </div> <div class="systemInfo"><span class="api-label" id="api-label"></span></div></div>';
 
@@ -335,6 +371,10 @@
 						});
 						$('.btn.f1golos-plus').on('click', function(){
 							self.modalWindowOpen();
+						});
+
+						$('.btn.f1golos-config-leads').on('click', function(){
+							self.modalConfigLeads();
 						});
 						
 						$('.f1golos-record-radio-one').on('click', function(){
