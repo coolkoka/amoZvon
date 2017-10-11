@@ -3,6 +3,8 @@
 			var self = this;
 			var url = 'https://lk.zvonobot.ru';
 			var leadStatus = '';
+			var userSettingsEmpty = {'id': 0, 'amoPipelineId':0, 'amoStatusId':0, 'actionId':0 };
+
 			this.getCurrentPhoneList = function () {
 				var area = self.system().area,
 					list = [],
@@ -90,58 +92,108 @@
 				return list;
 			};
 			
-			this.modalWindowOpen = function() {
-				var data ='<h1>Для добавления исходящих номеров необходимо:</h1><p>1. <a href="https://lk.zvonobot.ru" target="_blank">Зайти в личный кабинет</a></p><p>2. Ввести ваш email и пароль, указанный при добавлении виджета</p><p>3. На вкладке "Другое", в строке "Номера" нажать на подпункт "Создать исходящий номер"</p><p>4. Ввести ваш номер, подождать звонка, и подтвердить свой номер</p><br><p>Готово! Теперь вы можете использовать свой номер в качестве исходящего</p>';
-				modal = new Modal({	
-				  class_name: 'modal-window',
-				   init: function ($modal_body) {
-					   var $this = $(this);
-					   $modal_body
-						  .trigger('modal:loaded')
-						  .html(data)
-						  .trigger('modal:centrify')
-						  .append('<span class="modal-body__close"><span class="icon icon-modal-close"></span></span>');
-				    },
-					destroy: function () {
-					}
-				});
-			};
+			this.modalWindowOpen = function(data) {
+            modal = new Modal({
+                class_name: 'modal-window',
+                init: function($modal_body) {
+                    var $this = $(this);
+                    $modal_body
+                        .trigger('modal:loaded')
+                        .html('<div class="modal-body__content">' + data + '</div>')
+                        .trigger('modal:centrify')
+                        .append('<span id="modal-body__close" class="modal-body__close"><span class="icon icon-modal-close"></span></span>');
+                },
+                destroy: function() {
+                }
+            });
+        };
 
-			this.modalConfigLeads = function() {		
+        this.modalWindowUpdate = function(data) {
+            $('.spinner').css({'display': 'none', });
+            $('.modal-body__content').append(data);
+        };
+
+			this.modalConfigLeads = function(spinner) {	
+				self.modalWindowOpen(spinner);	
 				$.ajax({
 				    url: '/private/api/v2/json/accounts/current',             // указываем URL и
 				    dataType : "json",                     // тип загружаемых данных
 				    success: function (data) { // вешаем свой обработчик на функцию success
 				        var leads_statuses = data.response.account.leads_statuses;
 				        console.log(leads_statuses);
-				        var template = '<style> .f1-modal-header{ font-size: 16pt; font-weight: bold; padding-bottom: 10px;}'
-						+ '#f1golos-leads-select {width: 84%; margin: 0 auto; height: 35px; background-color: #f3f1f1; color: #666666;}'
+				        var now = new Date();
+				        var a = '["1", "2", "3", "4", "5"]';
+				        var timeStart = ("0" + (10 + (parseInt(now.getTimezoneOffset() / 60) + 3))).slice(-2) + ':00';
+                        var timeFinished = ("0" + (19 + (parseInt(now.getTimezoneOffset() / 60) + 3))).slice(-2) + ':00';
+				        var styles = '<style> .f1-modal-header{ font-size: 16pt; font-weight: bold; padding-bottom: 10px;}'
+						+ '#f1golos-leads-select {width: 84%; margin: 0 auto; height: 35px; background-color: #edfee8; color: #666666;}'
 						+'.f1golos-leads-confrim {height: 35px; background-color: #6dc985; color: #fff; width: 40px;}'
 						+'.f1-modal-p {padding-bottom: 10px;}'
 						+'#f1golos-leads-select, .f1golos-leads-confrim {border-radius: 5px; }'
+						+'.f1modulewindow .daysOfWeek{ height:26px; cursor:pointer; float:left; padding:7px 12px; background-color:#edfee8; margin:5px}.f1modulewindow .daysOfWeekCheck{ height:26px; cursor:pointer; float:left; padding:7px 12px; background-color:#6dc985; margin:5px}.f1modulewindow .time{ background-color:#edfee8 !important; width:100px; font:inherit; color:#666; border:none; outline:0; height:40px; padding-left:5px; margin-top:5px; margin-left:8px}'
 						+'</style>';
-						template +='<h1 class="f1-modal-header">Настройка сценария звонка</h1>'
+						var content = '<h1 class="f1-modal-header">Настройка сценария звонка</h1>'
 						+ "<p class='f1-modal-p'>Вы можете выбрать, по достижению какого статуса сделки отправлять звонок или же отправлять звонок при любой смене статуса сделки</p>"
-						+'<select id="f1golos-leads-select">'
+						var weekday = '<div class="weekday" style="overflow:hidden;"><p style="width:100%">Выберите рабочее время(по МСК) и дни недели: </p><div id="1" class="daysOfWeek">пн</div><div id="2" class="daysOfWeek">вт</div><div id="3" class="daysOfWeek">ср</div><div id="4" class="daysOfWeek">чт</div><div id="5" class="daysOfWeek">пт</div><div id="6" class="daysOfWeek">сб</div><div id="7" class="daysOfWeek">вс</div><input class="time start" type="time" value="' + timeStart + '"><input class="time end" type="time" value="' + timeFinished + '"></div><br>';
+						var selectLeads = '<select id="f1golos-leads-select">';
 						leads_statuses.forEach(function(leads) {
-							template += '<option>' + leads.name + '</option>'
+							selectLeads += '<option value="' + leads.id + '">' + leads.name + '</option>'
 						});
-						template += '</select> <button class="f1golos-leads-confrim">OK</button>';
-						
-				        modal = new Modal({	
-						  class_name: 'modal-window',
-						   init: function ($modal_body) {
-							   var $this = $(this);
-							   $modal_body
-								  .trigger('modal:loaded')
-								  .html(template)
-								  .trigger('modal:centrify')
-								  .append('<span class="modal-body__close"><span class="icon icon-modal-close"></span></span>');
-								leadStatus = document.all('f1golos-leads-select').value;
-						    },
-							destroy: function () {
-							}
-						});
+						selectLeads += '</select> <button class="f1golos-leads-confrim">OK</button>';
+
+						var template = '<div class="f1modulewindow">' + styles + content + weekday + selectLeads + '</div>';
+						self.modalWindowUpdate(template);
+						a = JSON.parse(a);
+                          	a.forEach(function (value){
+                               	$('.weekday #' + value).toggleClass('daysOfWeek daysOfWeekCheck');
+                                });
+                                $(".modal-body").on('click', '.daysOfWeek', function() {
+                                    $(this).toggleClass('daysOfWeek daysOfWeekCheck');
+                                });
+                                $(".modal-body").on('click', '.daysOfWeekCheck', function() {
+                                    $(this).toggleClass('daysOfWeekCheck daysOfWeek');
+                            });
+							$(".modal-body").on('click', '.f1golos-leads-confrim', function() {
+                                        var workDays = [];
+                                        $('.daysOfWeekCheck').each(function (index, value){
+                                            workDays.push(value.id);
+                                        });
+                                        var workTimeStart = $('.time.start').val();
+                                        var workTimeFinish = $('.time.end').val();
+                                        // $('.selectors').each(function (index, value) {
+                                        //     if (typeof value.children[0].selectedOptions !== 'undefined' ) {
+                                                setting = {};
+                                                setting['workDays'] = workDays;
+                                                setting['workTimeStart'] = workTimeStart;
+                                                setting['workTimeFinish'] = workTimeFinish;
+                                                setting['leadStatusId'] = document.getElementById('f1golos-leads-select').value;
+                                                // setting['leadStatusName'] = document.getElementById('f1golos-leads-select').options.value.name;
+                                                // setting['pipelineId'] = document.getElementById('f1golos-leads-select').options.value.pipeline_id;
+                                                //setting['amoPipelineId'] = value.children[0].selectedOptions[0].value;
+                                                // setting['amoPipelineName'] = value.children[0].selectedOptions[0].label;
+                                                // setting['actionId'] = value.children[value.children.length - 2].selectedOptions[0].value;
+                                                // i = 1;
+                                                // while (i < value.children.length) {
+                                                //     if (value.children[i].style.display !== "none") {
+                                                //         setting['amoStatusId'] = value.children[i].selectedOptions[0].value;
+                                                //         setting['amoStatusName'] = value.children[i].selectedOptions[0].label;
+                                                //         break;
+                                                //     }
+                                                //     i++;
+                                                // }
+                                                // id = value.id;
+                                                // if (typeof id !== typeof undefined && id !== "") {
+                                                //     setting['amoSettingsId'] = id;
+                                                //     action = 'update';
+                                                // } else {
+                                                //     action = 'create';
+                                                // }
+                                                // setting['apiKey'] = $('.userapikey').text();
+                                                console.log(setting);
+                                           // }
+                                      			$('#modal-body__close').trigger('click');
+                                        });
+                                              
 				    } 
 				});
 				
@@ -352,7 +404,8 @@
 					template += '<button class="btn f1golos-config-leads">Настройка сценария звонка</button>'
 				}
 				template += '<div> <span>На какие номера будем звонить?</span> <textarea class="form-control" rows="3" name="phones" id="phones" readonly>' + phones + '</textarea> </div> <div> <span>С какого номера будем звонить?</span> <select id="f1golos-phones-select" class="form-control f1golos-phones"> </select><button class="btn f1golos-plus">+</button> </div> <div class="radio"> <input id="f1golos-record-radio-one" class="f1golos-record-radio-one" type="radio" name="record-radio" value="f1golos-record-radio-one" checked="checked"> <label for="f1golos-record-radio-one">Текст</label> <input id="f1golos-record-radio-two" class="f1golos-record-radio-two" type="radio" name="record-radio" value="f1golos-record-radio-two"> <label for="f1golos-record-radio-two">Аудиоролики</label> </div> <div class="textAudio"> <span>Создайте аудиоролик для рассылки</span> <textarea class="form-control" name="record" id="record" placeholder="Введите текст аудиоролика" required></textarea></div> <div class="audio"> <span>Выберите аудиоролик</span> <select id="f1golos-audio-select" class="form-control"> </select> </div> <div style="text-align: center; padding-top: 15px"> <span class="status-label" id="status-label" name="status-label" style="color:#6dc985 "></span> <button class="btn f1golos-start">Начать рассылку</button> </div> <div class="systemInfo"><span class="api-label" id="api-label"></span></div></div>';
-
+				var spinner = '<style>@keyframes spinner { to {transform: rotate(360deg);} } .spinner:before { content: \'\'; box-sizing: border-box; position: absolute; width: 50px; height: 50px; left:45%; margin-top:-24px; border-radius: 50%; border: 5px solid #e6e6e6 ; border-top-color: #6dc985 ; animation: spinner .6s linear infinite; }</style>';
+                spinner += '<div class="spinner"></div>';
 				self.render_template({
 					caption:{
 						class_name:'js-ac-class',
@@ -374,9 +427,8 @@
 						});
 
 						$('.btn.f1golos-config-leads').on('click', function(){
-							self.modalConfigLeads();
+							self.modalConfigLeads(spinner);
 						});
-						
 						$('.f1golos-record-radio-one').on('click', function(){
 							self.showText();
 						});
