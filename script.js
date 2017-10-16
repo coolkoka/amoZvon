@@ -137,64 +137,65 @@
 						var weekday = '<div class="weekday" style="overflow:hidden;"><p style="width:100%">Выберите рабочее время(по МСК) и дни недели: </p><div id="1" class="daysOfWeek">пн</div><div id="2" class="daysOfWeek">вт</div><div id="3" class="daysOfWeek">ср</div><div id="4" class="daysOfWeek">чт</div><div id="5" class="daysOfWeek">пт</div><div id="6" class="daysOfWeek">сб</div><div id="7" class="daysOfWeek">вс</div><input class="time start" type="time" value="' + timeStart + '"><input class="time end" type="time" value="' + timeFinished + '"></div><br>';
 						var selectLeads = '<select id="f1golos-leads-select">';
 						leads_statuses.forEach(function(leads) {
-							selectLeads += '<option value="' + leads.id + '">' + leads.name + '</option>'
+							selectLeads += '<option lead-id="' + leads.id + '" pipeline-id="' + leads.pipeline_id + '">' + leads.name + '</option>'
 						});
 						selectLeads += '</select> <button class="f1golos-leads-confrim">OK</button>';
 
 						var template = '<div class="f1modulewindow">' + styles + content + weekday + selectLeads + '</div>';
 						self.modalWindowUpdate(template);
 						a = JSON.parse(a);
-                          	a.forEach(function (value){
-                               	$('.weekday #' + value).toggleClass('daysOfWeek daysOfWeekCheck');
-                                });
-                                $(".modal-body").on('click', '.daysOfWeek', function() {
-                                    $(this).toggleClass('daysOfWeek daysOfWeekCheck');
-                                });
-                                $(".modal-body").on('click', '.daysOfWeekCheck', function() {
-                                    $(this).toggleClass('daysOfWeekCheck daysOfWeek');
-                            });
-							$(".modal-body").on('click', '.f1golos-leads-confrim', function() {
-                                        var workDays = [];
-                                        $('.daysOfWeekCheck').each(function (index, value){
-                                            workDays.push(value.id);
-                                        });
-                                        var workTimeStart = $('.time.start').val();
-                                        var workTimeFinish = $('.time.end').val();
-                                        // $('.selectors').each(function (index, value) {
-                                        //     if (typeof value.children[0].selectedOptions !== 'undefined' ) {
-                                                setting = {};
-                                                setting['workDays'] = workDays;
-                                                setting['workTimeStart'] = workTimeStart;
-                                                setting['workTimeFinish'] = workTimeFinish;
-                                                setting['leadStatusId'] = document.getElementById('f1golos-leads-select').value;
-                                                // setting['leadStatusName'] = document.getElementById('f1golos-leads-select').options.value.name;
-                                                // setting['pipelineId'] = document.getElementById('f1golos-leads-select').options.value.pipeline_id;
-                                                //setting['amoPipelineId'] = value.children[0].selectedOptions[0].value;
-                                                // setting['amoPipelineName'] = value.children[0].selectedOptions[0].label;
-                                                // setting['actionId'] = value.children[value.children.length - 2].selectedOptions[0].value;
-                                                // i = 1;
-                                                // while (i < value.children.length) {
-                                                //     if (value.children[i].style.display !== "none") {
-                                                //         setting['amoStatusId'] = value.children[i].selectedOptions[0].value;
-                                                //         setting['amoStatusName'] = value.children[i].selectedOptions[0].label;
-                                                //         break;
-                                                //     }
-                                                //     i++;
-                                                // }
-                                                // id = value.id;
-                                                // if (typeof id !== typeof undefined && id !== "") {
-                                                //     setting['amoSettingsId'] = id;
-                                                //     action = 'update';
-                                                // } else {
-                                                //     action = 'create';
-                                                // }
-                                                // setting['apiKey'] = $('.userapikey').text();
-                                                console.log(setting);
-                                           // }
-                                      			$('#modal-body__close').trigger('click');
-                                        });
-                                              
-				    } 
+						a.forEach(function (value){
+							$('.weekday #' + value).toggleClass('daysOfWeek daysOfWeekCheck');
+						});
+						$(".modal-body").on('click', '.daysOfWeek', function() {
+							$(this).toggleClass('daysOfWeek daysOfWeekCheck');
+						});
+						$(".modal-body").on('click', '.daysOfWeekCheck', function() {
+							$(this).toggleClass('daysOfWeekCheck daysOfWeek');
+						});
+						$(".modal-body").on('click', '.f1golos-leads-confrim', function() {
+							var workDays = [];
+							$('.daysOfWeekCheck').each(function (index, value){
+								workDays.push(value.id);
+							});
+							var workTimeStart = $('.time.start').val();
+							var workTimeFinish = $('.time.end').val();
+						// $('.selectors').each(function (index, value) {
+						//     if (typeof value.children[0].selectedOptions !== 'undefined' ) {
+							setting = {};
+							setting['workDays'] = workDays;
+							setting['workTimeStart'] = workTimeStart;
+							setting['workTimeFinish'] = workTimeFinish;
+							setting['leadStatusName'] = selectLead.value;
+							setting['leadStatusId'] = $('#f1golos-leads-select option:selected').attr('lead-id');
+							setting['pipelineId'] = $('#f1golos-leads-select option:selected').attr('pipeline-id');
+							//setting['pipelineId'] = selectLead.options.getAttribute('pipeline-id');
+						//setting['amoPipelineId'] = value.children[0].selectedOptions[0].value;
+						// setting['amoPipelineName'] = value.children[0].selectedOptions[0].label;
+						// setting['actionId'] = value.children[value.children.length - 2].selectedOptions[0].value;
+						// i = 1;
+						// while (i < value.children.length) {
+						//     if (value.children[i].style.display !== "none") {
+						//         setting['amoStatusId'] = value.children[i].selectedOptions[0].value;
+						//         setting['amoStatusName'] = value.children[i].selectedOptions[0].label;
+						//         break;
+						//     }
+						//     i++;
+						// }
+						// id = value.id;
+						// if (typeof id !== typeof undefined && id !== "") {
+						//     setting['amoSettingsId'] = id;
+						//     action = 'update';
+						// } else {
+						//     action = 'create';
+						// }
+						// setting['apiKey'] = $('.userapikey').text();
+						console.log(setting);
+						// }
+						$('#modal-body__close').trigger('click');
+						});
+
+					} 
 				});
 				
 			};
